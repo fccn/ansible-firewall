@@ -1,0 +1,13 @@
+---
+- set_fact:
+    iptables_file: /etc/sysconfig/iptables
+    ip6tables_file: /etc/sysconfig/ip6tables
+    iptables_service: iptables
+    ip6tables_service: ip6tables
+    iptables_package: iptables
+  tags: firewall
+
+- set_fact:
+    iptables_check_syntax_command: iptables-restore --test {{ iptables_file }}
+    ip6tables_check_syntax_command: ip6tables-restore --test {{ ip6tables_file }}
+  tags: firewall

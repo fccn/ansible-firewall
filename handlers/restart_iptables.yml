@@ -1,0 +1,21 @@
+- name: Real restarting iptables service
+  service: 
+    name: "{{ iptables_service }}"
+    state: restarted
+
+- name: Populate service facts
+  service_facts: 
+  when: ansible_facts.services is not defined
+
+- set_fact:
+    docker_service_state: "{{ ansible_facts.services['docker.service'].state if ansible_facts.services['docker.service'] is defined else 'not installed' }}"
+
+- debug:
+    msg: "docker service state: {{ docker_service_state }} on {{ inventory_hostname }} server"
+
+- name: Restart docker service after iptables restart
+  service:
+    name: docker
+    state: restarted
+  when: docker_service_state == 'running'
+

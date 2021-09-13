@@ -1,0 +1,37 @@
+---
+- name: Copy firewall iptables
+  template: 
+    src: iptables.j2
+    dest: "{{ iptables_file }}"
+    owner: root 
+    group: root
+    mode: 0644
+    backup: true
+  notify: restart iptables
+  register: iptables_file_out
+  when: configure_firewall | default(true)
+  tags: firewall
+
+- name: Check iptables syntax
+  when: iptables_file_out.changed and ( configure_firewall | default(true) )
+  tags: firewall
+  block:
+    - name: Check iptables syntax
+      command: "{{ iptables_check_syntax_command }}"
+  rescue:
+    - name: Read iptables file content before reverting
+      shell: cat {{ iptables_file }}
+      register: remove_iptables_content
+
+    - name: Content of iptables file with incorrect syntax
+      debug: 
+        msg: "{{ remove_iptables_content.stdout }}"
+
+    - name: Revert iptables file content
+      copy: 
+        remote_src: True # move
+        src: "{{ iptables_file_out.backup_file }}"
+        dest: "{{ iptables_file }}"
+
+    - fail:
+        msg: There is a syntax error on {{ iptables_file }} file. We've reverting it. Check content previously printed.

@@ -1,0 +1,13 @@
+---
+- set_fact:
+    iptables_file: /etc/iptables/rules.v4
+    ip6tables_file: /etc/iptables/rules.v6
+    iptables_service: netfilter-persistent
+    ip6tables_service: netfilter-persistent
+    iptables_package: iptables-persistent
+  tags: firewall
+
+- set_fact:
+    iptables_check_syntax_command: iptables-restore --test {{ iptables_file }}
+    ip6tables_check_syntax_command: ip6tables-restore --test {{ ip6tables_file }}
+  tags: firewall
