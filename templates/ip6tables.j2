@@ -1,0 +1,65 @@
+#{{ ansible_managed }}
+
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:Chain-ICMP - [0:0]
+:Chain-SYN - [0:0]
+
+######## Allow communications via localhost #########################
+-A INPUT -i lo -j ACCEPT
+
+######## Accept established connections #############################
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+######## Detect attacks and jump to chain to deal with it ############
+-A INPUT -p ipv6-icmp -j Chain-ICMP -m comment --comment "Detect ICMP FLOOD attacks"
+-A INPUT -p tcp --syn -j Chain-SYN -m comment --comment "Detect TCP SYN FLOOD attacks"
+
+######## Connections between servers rules ##########################
+{% for server_rule in firewall_6_servers_rules %}
+{{ server_rule }}
+{% endfor %}
+
+######## Servers management rules ###################################
+{% for management_rule in firewall_6_management_rules %}
+{{ management_rule }}
+{% endfor %}
+
+######## Servers monitoring rules ###################################
+{% for monitoring_rule in firewall_6_monitoring_rules %}
+{{ monitoring_rule }}
+{% endfor %}
+
+######## Servers backups rules ######################################
+{% for backups_rule in firewall_6_backups_rules %}
+{{ backups_rule }}
+{% endfor %}
+
+######## Server specific rules ######################################
+{% for specific_rule in firewall_6_specific_rules %}
+{{ specific_rule }}
+{% endfor %}
+
+######## Detect ICMP FLOOD attacks and drop them ####################
+-A Chain-ICMP -m limit --limit 10/s --limit-burst 100 -j ACCEPT -m comment --comment "Detect ICMP FLOOD attacks and drop them"
+-A Chain-ICMP -m limit --limit 4/s -j LOG --log-level 7 --log-prefix "DROP-ICMP-FLOOD: " --log-tcp-sequence --log-tcp-options --log-ip-options --log-uid -m comment --comment "Detect ICMP FLOOD attacks and drop them"
+-A Chain-ICMP -j DROP -m comment --comment "Detect ICMP FLOOD attacks and drop them"
+
+######## Detect SYN FLOOD attacks and drop them #####################
+-A Chain-SYN -m limit --limit 200/s --limit-burst 200 -j RETURN -m comment --comment "Detect SYN FLOOD attacks and drop them"
+-A Chain-SYN -m limit --limit 4/s -j LOG --log-level 7 --log-prefix "DROP-SYN-FLOOD: " --log-tcp-sequence --log-tcp-options --log-ip-options --log-uid -m comment --comment "Detect SYN FLOOD attacks and drop them"
+-A Chain-SYN -j DROP -m comment --comment "Detect SYN FLOOD attacks and drop them"
+
+######## Drop all other traffic #####################################
+-A INPUT -m limit --limit 4/s -j LOG --log-level 7 --log-prefix "DROP-UNKNOWN: " --log-tcp-sequence --log-tcp-options --log-ip-options --log-uid -m comment --comment "drop all the rest"
+-A INPUT -j DROP -m comment --comment "Drop all other traffic"
+COMMIT
+
+{% if firewall_6_additional_rules is defined and (firewall_6_additional_rules | length > 0) %}
+######## Server additional rules ######################################
+{% for additional_rule in firewall_6_additional_rules %}
+{{ additional_rule }}
+{% endfor %}
+{% endif %}

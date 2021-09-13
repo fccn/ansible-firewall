@@ -1,0 +1,8 @@
+---
+- name: restart iptables
+  include_tasks: "{{ role_path }}/handlers/restart_iptables.yml"
+  when: firewall_enable_restart
+
+- name: restart ip6tables
+  include_tasks: "{{ role_path }}/handlers/restart_ip6tables.yml"
+  when: firewall_enable_restart

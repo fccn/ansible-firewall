@@ -1,0 +1,43 @@
+---
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+  tags: firewall
+
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+  tags: firewall
+
+- name: Install iptables package
+  package:
+    name: "{{ iptables_package }}"
+    state: present
+  when: configure_firewall | default(true)
+  tags: firewall
+
+- include_tasks: ipv4.yml
+  tags: firewall
+
+- include_tasks: ipv6.yml
+  tags: firewall
+
+# The iptables service ipv4 needs to be started on boot after the ipv6 file has been updated
+# so we can ensure the ipv6 file is well formatted.
+- name: Ensure iptables service is enabled and will start on boot.
+  service: 
+    name: "{{ iptables_service }}"
+    state: started
+    enabled: yes
+  when: configure_firewall | default(true)
+  tags: firewall
+
+- name: Ensure ip6tables service is enabled and will start on boot.
+  service: 
+    name: "{{ ip6tables_service }}"
+    state: started
+    enabled: yes
+  when: configure_firewall | default(true)
+  tags: firewall
+
+- name: Flush handlers to restart iptables and ip6tables services, and if needed the docker service
+  meta: flush_handlers
+  tags: firewall

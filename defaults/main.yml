@@ -1,0 +1,49 @@
+---
+firewall_enable_restart: true
+
+## IPv4
+firewall_backups_rules:
+   - -A INPUT -s 10.0.11.70,193.137.196.18,193.137.196.23 -m state --state NEW -m tcp -p tcp --dport 9102 -j ACCEPT -m comment --comment "BACKUPS"
+   
+firewall_management_rules:
+   - -A INPUT -s {{ firewall_management_networks_for_rule }} -p tcp -m tcp --dport 22 -m state --state NEW -j ACCEPT -m comment --comment "SSH from CORP and VPN Networks"
+
+firewall_monitoring_rules:
+   - -A INPUT -s 193.136.7.2  -j ACCEPT -m comment --comment "MONITORIZACAO" 
+   - -A INPUT -s 193.136.7.33 -j ACCEPT -m comment --comment "MONITORIZACAO"
+   - -A INPUT -s 193.136.7.7  -j ACCEPT -m comment --comment "MONITORIZACAO"
+   - -A INPUT -s 10.0.5.11    -j ACCEPT -m comment --comment "MONITORIZACAO Ananda"
+   - -A INPUT -s 193.136.7.14 -j ACCEPT -m comment --comment "MONITORIZACAO cacti.fccn.pt"
+   - -A INPUT -s 193.136.7.12 -j ACCEPT -m comment --comment "MONITORIZACAO icinga.fccn.pt" 
+
+firewall_servers_rules: []
+firewall_specific_rules: []
+
+firewall_management_networks_for_rule: "{{ firewall_management_networks | join(',') }}"
+
+firewall_management_networks:
+  - 193.136.44.0/24 # CORP
+  - 172.16.10.0/24  # VPN
+  - 172.16.11.0/24  # VPN
+
+firewall_additional_rules: []
+
+#
+# IPv6
+#
+firewall_6_backups_rules: []
+firewall_6_management_rules: 
+   - -A INPUT -s {{ firewall_6_management_networks_for_rule }} -p tcp -m tcp --dport 22 -m state --state NEW -j ACCEPT -m comment --comment "SSH from CORP Network"
+
+firewall_6_monitoring_rules:
+   - -A INPUT -s 2001:690:a00:2029:804::2,2001:690:a00:2029:20c:29ff:fe26:f68 -m comment --comment "MONITORIZACAO" -j ACCEPT
+
+firewall_6_servers_rules: []
+firewall_6_specific_rules: []
+firewall_6_management_networks_for_rule: "{{ firewall_6_management_networks | join(',') }}"
+
+firewall_6_management_networks:
+  - 2001:690:2080:8009::/64 # CORP
+
+firewall_6_additional_rules: []
+
