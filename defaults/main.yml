@@ -9,9 +9,9 @@ firewall_management_rules:
    - -A INPUT -s {{ firewall_management_networks_for_rule }} -p tcp -m tcp --dport 22 -m state --state NEW -j ACCEPT -m comment --comment "SSH from CORP and VPN Networks"
 
 firewall_monitoring_rules:
-   - -A INPUT -s 193.136.7.2  -j ACCEPT -m comment --comment "MONITORIZACAO" 
+   - -A INPUT -s 193.136.7.2  -j ACCEPT -m comment --comment "MONITORIZACAO Sirens" 
    - -A INPUT -s 193.136.7.33 -j ACCEPT -m comment --comment "MONITORIZACAO"
-   - -A INPUT -s 193.136.7.7  -j ACCEPT -m comment --comment "MONITORIZACAO"
+   - -A INPUT -s 193.136.7.7  -j ACCEPT -m comment --comment "MONITORIZACAO Sirens bkp"
    - -A INPUT -s 10.0.5.11    -j ACCEPT -m comment --comment "MONITORIZACAO Ananda"
    - -A INPUT -s 193.136.7.14 -j ACCEPT -m comment --comment "MONITORIZACAO cacti.fccn.pt"
    - -A INPUT -s 193.136.7.12 -j ACCEPT -m comment --comment "MONITORIZACAO icinga.fccn.pt" 
